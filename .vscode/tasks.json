@@ -1,0 +1,81 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Intall",
+      "command": "make",
+      "args": ["install"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Restart Rack",
+      "type": "shell",
+      "command": ["./restart-rack-macos.sh"],
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": [],
+      "group": "build",
+      "presentation": {
+        "reveal": "never",
+        "clear": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Log",
+      "type": "shell",
+      "command": "tail",
+      "args": ["-f", "~/Documents/Rack/log.txt"],
+      "group": "build",
+      "presentation": {
+        "reveal": "always",
+        "panel": "new",
+        "clear": true,
+        "focus": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Install & Restart",
+      "type": "shell",
+      "dependsOrder": "sequence",
+      "dependsOn": ["Intall", "Restart Rack", "Log"],
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true,
+        "showReuseMessage": false
+      }
+    },
+    {
+      "label": "Test",
+      "type": "shell",
+      "command": "date",
+      "group": {
+        "kind": "test",
+        "isDefault": true
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "shared",
+        "clear": true,
+        "showReuseMessage": false
+      }
+    }
+  ]
+}
