@@ -1,9 +1,9 @@
 {
-  "slug": "LilacLoop",
-  "name": "Lilac Loop",
-  "version": "2.0.0",
+  "slug": "LilacLoop2",
+  "name": "Lilac Loop2",
+  "version": "2.1.0",
   "license": "GPL-3.0-or-later",
-  "brand": "Lilac",
+  "brand": "Lilac2",
   "author": "Gavin Rough",
   "authorEmail": "lilacloop@grough.com",
   "pluginUrl": "https://grough.github.io/lilac-loop-vcv/",
@@ -14,6 +14,16 @@
     {
       "slug": "Looper",
       "name": "Looper",
+      "description": "Stereo multi-track live looper",
+      "tags": [
+        "Polyphonic",
+        "Recording",
+        "Sampler"
+      ]
+    },
+    {
+      "slug": "LooperTwo",
+      "name": "LooperTwo",
       "description": "Stereo multi-track live looper",
       "tags": [
         "Polyphonic",

@@ -4,6 +4,7 @@ struct Loop {
   int pos = -1;
   int start = -1;
   bool dirty = false;
+  float previousSend = 0.0f;
 
   void next(int size, int position) {
     if (start == -1 && size > 0)
@@ -26,14 +27,24 @@ struct Loop {
     return 0.0f;
   }
 
+  float readPrevious() {
+    if (pos > -1) {
+      return samples[pos!=0?pos-1:size()-1];
+    }
+
+    return 0.0f;
+  }
+
   void write(float value) {
     if (pos == -1)
       return;
 
     if (value != 0.0f)
       dirty = true;
-
-    samples[pos] = value;
+    if(size()>1) {
+      //if pos is not 0, write to previous, else wrap around
+      samples[pos!=0?pos-1:size()-1] = value;
+    }
   }
 
   int size() {
@@ -96,6 +107,18 @@ struct MultiLoop {
 
   float read(int port, int channel) {
     return loops[port][channel].read();
+  }
+
+  float readPrevious(int port, int channel) {
+    return loops[port][channel].readPrevious();
+  }
+
+  void setPreviousSend(int port, int channel, float send) {
+    loops[port][channel].previousSend = send;
+  }
+
+  float getPreviousSend(int port, int channel) {
+    return loops[port][channel].previousSend;
   }
 
   void write(int port, int channel, float value) {

@@ -299,7 +299,9 @@ struct Looper : Module {
 
     if (mode == STOPPED) {
       feedback = 1.0f;
-    } else {
+    }
+    else
+    {
       feedback = math::clamp(params[FEEDBACK_PARAM].getValue() + inputs[FEEDBACK_CV_INPUT].getVoltage() / 10.0f, 0.0f, 1.0f);
     }
 
@@ -321,7 +323,8 @@ struct Looper : Module {
 
     // Count inputs
 
-    for (size_t p = 0; p < PORTS; p++) {
+    for (size_t p = 0; p < PORTS; p++)
+    {
       int tracks = loop.setChannels(p, std::max(inputs[ins[p]].getChannels(), inputs[rtrns[p]].getChannels()));
       outputs[outs[p]].setChannels(tracks);
       outputs[snds[p]].setChannels(tracks);
@@ -337,21 +340,83 @@ struct Looper : Module {
 
       // Process each polyphony channel
 
-      for (int channel = 0; channel < loop.getChannels(p); channel++) {
+      for (int channel = 0; channel < loop.getChannels(p); channel++)
+      {
+
+        /*
+        what do i want:
+        return is sent to the outputs
+        return fully overwrites the loop, it doesn't get added to the loop
+        */
+
+        // float in = inputs[ins[p]].getVoltage(channel);
+        // float rtrn = inputs[rtrns[p]].getVoltage(channel);
+
+        // float sample = loop.read(p, channel);
+        // float rtrnGate = rtrnActive && inputs[rtrns[p]].getChannels() >= (signed)(channel + 1) ? mod : 0.0f;
+        // float newSample = rtrnGate * rtrn + (1 - rtrnGate) * sample;
+
+        // loop.write(p, channel, feedback * newSample + inGate * in);
+
+        // float send = outGate * sample;
+        // float out = loopLevel * send + monitorLevel * in;
+
+        // outputs[outs[p]].setVoltage(out, channel);
+        // outputs[snds[p]].setVoltage(send, channel);
+
+        /*if return is disabled, add the input with the current loop sample,
+        then write to loop before send/return, and return is output
+
+        if return is enabled, add the input with current loop sample,
+        then write to loop after send/return, and return is output
+
+        */
         float in = inputs[ins[p]].getVoltage(channel);
         float rtrn = inputs[rtrns[p]].getVoltage(channel);
+        float out = 0.0f;
+        float send = 0.0f;
 
         float sample = loop.read(p, channel);
-        float rtrnGate = rtrnActive && inputs[rtrns[p]].getChannels() >= (signed)(channel + 1) ? mod : 0.0f;
-        float newSample = rtrnGate * rtrn + (1 - rtrnGate) * sample;
+        float prevSample = loop.readPrevious(p, channel);
+        // because the return is processed one sample after it's sent,
+        // it needs to write one step earlier in the array
+        if (rtrnActive)
+        {
 
-        loop.write(p, channel, feedback * newSample + inGate * in);
+          /*
+          output: return
+          send: current loop position + current input
+          write: return at previous loop position
+          */
+          // float newSample = rtrnGate * rtrn + (1 - rtrnGate) * sample;
+          float newSample = rtrn;
+          
+          loop.write(p, channel, rtrn);
 
-        float send = outGate * sample;
-        float out = loopLevel * send + monitorLevel * in;
+          //send has to be current sample, and out has to be previous sample
+          send =  outGate *  (  monitorLevel * inGate *   in + sample);
+          loop.setPreviousSend(p,channel, send);
+          out = loopLevel * rtrn;
+          //out = 1;
+        }
+        else
+        {
 
+          /*
+          output: return
+          send: current loop position + current input
+          write: previous send
+          */
+          loop.write(p, channel, loop.getPreviousSend(p,channel));
+
+          send = outGate *  ( monitorLevel * inGate *  in + sample);
+          loop.setPreviousSend(p,channel, send);
+          out = loopLevel * rtrn;
+          //out = 1;
+        }
         outputs[outs[p]].setVoltage(out, channel);
         outputs[snds[p]].setVoltage(send, channel);
+
       }
     }
 
@@ -360,7 +425,8 @@ struct Looper : Module {
     if (loop.position == 0)
       restartPulse.trigger(0.1f);
 
-    if (lightDivider.process()) {
+    if (lightDivider.process())
+    {
       float lightTime = 512 * args.sampleTime;
 
       float restartBlink = (1.0f - togglePulse.process(lightTime)) * restartPulse.process(lightTime);
